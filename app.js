@@ -9,7 +9,10 @@ const defaults = {
 };
 
 let state = loadState();
-let dragContext = null;
+let editMode = {
+  numbers: false,
+  categories: false
+};
 
 const numbersGrid = document.querySelector("#numbers-grid");
 const categoriesGrid = document.querySelector("#categories-grid");
@@ -17,8 +20,10 @@ const summaryTotal = document.querySelector("#summary-total");
 const summaryCategory = document.querySelector("#summary-category");
 const saveButton = document.querySelector("#save-entry");
 const entriesList = document.querySelector("#entries-list");
-const addNumberButton = document.querySelector("#add-number");
-const addCategoryButton = document.querySelector("#add-category");
+const editNumbersButton = document.querySelector("#edit-numbers");
+const editCategoriesButton = document.querySelector("#edit-categories");
+const numbersEditSheet = document.querySelector("#numbers-edit-sheet");
+const categoriesEditSheet = document.querySelector("#categories-edit-sheet");
 const clearCountsButton = document.querySelector("#clear-counts");
 
 function loadState() {
@@ -64,6 +69,7 @@ function formatDate(value) {
 function render() {
   renderNumbers();
   renderCategories();
+  renderEditSheets();
   renderSummary();
   renderEntries();
   persist();
@@ -71,28 +77,28 @@ function render() {
 
 function renderNumbers() {
   numbersGrid.innerHTML = "";
-  state.numbers.forEach((number, index) => {
+  state.numbers.forEach((number) => {
     const count = Number(state.counts[number] || 0);
     const item = document.createElement("div");
     item.className = `choice${count ? " selected" : ""}`;
-    item.draggable = true;
-    item.dataset.type = "numbers";
-    item.dataset.index = String(index);
 
     const action = document.createElement("button");
     action.type = "button";
     action.className = "choice-action";
     action.setAttribute("aria-label", count ? `${number} selected ${count} times` : `Select ${number}`);
-    action.innerHTML = `<span class="choice-main">${number}${count ? ` <span class="choice-count">x ${count}</span>` : ""}</span>`;
+    action.innerHTML = `<span class="choice-main">${number}</span>`;
     action.addEventListener("click", () => {
       state.counts[number] = count + 1;
       render();
     });
 
-    const tools = choiceTools(`Delete ${number}`);
-    tools.deleteButton.addEventListener("click", () => deleteNumber(number));
-    item.append(action, tools.wrap);
-    attachDragEvents(item);
+    item.append(action);
+    if (count) {
+      const badge = document.createElement("span");
+      badge.className = "choice-badge";
+      badge.textContent = `x${count}`;
+      item.appendChild(badge);
+    }
     numbersGrid.appendChild(item);
   });
 }
@@ -103,12 +109,9 @@ function renderCategories() {
     state.selectedCategory = state.categories[0] || "";
   }
 
-  state.categories.forEach((category, index) => {
+  state.categories.forEach((category) => {
     const item = document.createElement("div");
     item.className = `choice${category === state.selectedCategory ? " selected" : ""}`;
-    item.draggable = true;
-    item.dataset.type = "categories";
-    item.dataset.index = String(index);
 
     const action = document.createElement("button");
     action.type = "button";
@@ -120,32 +123,105 @@ function renderCategories() {
       render();
     });
 
-    const tools = choiceTools(`Delete ${category}`);
-    tools.deleteButton.addEventListener("click", () => deleteCategory(category));
-    item.append(action, tools.wrap);
-    attachDragEvents(item);
+    item.append(action);
     categoriesGrid.appendChild(item);
   });
 }
 
-function choiceTools(deleteLabel) {
-  const wrap = document.createElement("span");
-  wrap.className = "choice-tools";
+function renderEditSheets() {
+  editNumbersButton.textContent = editMode.numbers ? "Done" : "Edit";
+  editNumbersButton.setAttribute("aria-expanded", String(editMode.numbers));
+  editCategoriesButton.textContent = editMode.categories ? "Done" : "Edit";
+  editCategoriesButton.setAttribute("aria-expanded", String(editMode.categories));
 
-  const handle = document.createElement("span");
-  handle.className = "drag-handle";
-  handle.setAttribute("aria-hidden", "true");
-  handle.textContent = "=";
+  renderEditSheet({
+    sheet: numbersEditSheet,
+    isOpen: editMode.numbers,
+    type: "numbers",
+    inputType: "number",
+    inputMode: "decimal",
+    placeholder: "Add number",
+    values: state.numbers,
+    onAdd: addNumber,
+    onDelete: deleteNumber
+  });
 
-  const deleteButton = document.createElement("button");
-  deleteButton.type = "button";
-  deleteButton.className = "danger-button";
-  deleteButton.setAttribute("aria-label", deleteLabel);
-  deleteButton.title = deleteLabel;
-  deleteButton.textContent = "x";
+  renderEditSheet({
+    sheet: categoriesEditSheet,
+    isOpen: editMode.categories,
+    type: "categories",
+    inputType: "text",
+    inputMode: "text",
+    placeholder: "Add category",
+    values: state.categories,
+    onAdd: addCategory,
+    onDelete: deleteCategory
+  });
+}
 
-  wrap.append(handle, deleteButton);
-  return { wrap, deleteButton };
+function renderEditSheet(config) {
+  config.sheet.hidden = !config.isOpen;
+  config.sheet.innerHTML = "";
+  if (!config.isOpen) return;
+
+  const form = document.createElement("form");
+  form.className = "edit-add-row";
+
+  const input = document.createElement("input");
+  input.type = config.inputType;
+  input.inputMode = config.inputMode;
+  input.placeholder = config.placeholder;
+  input.setAttribute("aria-label", config.placeholder);
+
+  const add = document.createElement("button");
+  add.type = "submit";
+  add.className = "small-action";
+  add.textContent = "Add";
+
+  form.append(input, add);
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    config.onAdd(input.value);
+    input.value = "";
+    input.focus();
+  });
+
+  const list = document.createElement("div");
+  list.className = "edit-list";
+
+  config.values.forEach((value, index) => {
+    const row = document.createElement("div");
+    row.className = "edit-row";
+
+    const label = document.createElement("div");
+    label.className = "edit-label";
+    label.textContent = value;
+
+    const up = document.createElement("button");
+    up.type = "button";
+    up.className = "small-action";
+    up.textContent = "Up";
+    up.disabled = index === 0;
+    up.addEventListener("click", () => moveItem(config.type, index, index - 1));
+
+    const down = document.createElement("button");
+    down.type = "button";
+    down.className = "small-action";
+    down.textContent = "Down";
+    down.disabled = index === config.values.length - 1;
+    down.addEventListener("click", () => moveItem(config.type, index, index + 1));
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "small-action remove-action";
+    remove.textContent = "Remove";
+    remove.addEventListener("click", () => config.onDelete(value));
+
+    row.append(label, up, down, remove);
+    list.appendChild(row);
+  });
+
+  config.sheet.append(form, list);
 }
 
 function renderSummary() {
@@ -211,9 +287,7 @@ function renderEntries() {
   });
 }
 
-function addNumber() {
-  const value = prompt("Number");
-  if (value === null) return;
+function addNumber(value) {
   const number = Number(value);
   if (!Number.isFinite(number) || number <= 0) return;
   if (!state.numbers.includes(number)) {
@@ -222,9 +296,7 @@ function addNumber() {
   render();
 }
 
-function addCategory() {
-  const value = prompt("Category");
-  if (value === null) return;
+function addCategory(value) {
   const category = value.trim();
   if (!category) return;
   if (!state.categories.includes(category)) {
@@ -266,32 +338,9 @@ function resetCounts() {
   render();
 }
 
-function attachDragEvents(element) {
-  element.addEventListener("dragstart", (event) => {
-    dragContext = {
-      type: element.dataset.type,
-      from: Number(element.dataset.index)
-    };
-    element.classList.add("dragging");
-    event.dataTransfer.effectAllowed = "move";
-  });
-
-  element.addEventListener("dragend", () => {
-    dragContext = null;
-    element.classList.remove("dragging");
-  });
-
-  element.addEventListener("dragover", (event) => {
-    if (dragContext?.type === element.dataset.type) {
-      event.preventDefault();
-    }
-  });
-
-  element.addEventListener("drop", (event) => {
-    event.preventDefault();
-    if (!dragContext || dragContext.type !== element.dataset.type) return;
-    reorder(dragContext.type, dragContext.from, Number(element.dataset.index));
-  });
+function moveItem(type, from, to) {
+  if (to < 0 || to >= state[type].length) return;
+  reorder(type, from, to);
 }
 
 function reorder(type, from, to) {
@@ -309,14 +358,20 @@ function escapeHtml(value) {
   return div.innerHTML;
 }
 
-addNumberButton.addEventListener("click", addNumber);
-addCategoryButton.addEventListener("click", addCategory);
+editNumbersButton.addEventListener("click", () => {
+  editMode.numbers = !editMode.numbers;
+  render();
+});
+editCategoriesButton.addEventListener("click", () => {
+  editMode.categories = !editMode.categories;
+  render();
+});
 saveButton.addEventListener("click", saveEntry);
 clearCountsButton.addEventListener("click", resetCounts);
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("sw.js");
+    navigator.serviceWorker.register("./sw.js", { scope: "./" });
   });
 }
 

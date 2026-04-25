@@ -16,6 +16,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 html {
   min-height: 100%;
   background: var(--bg);
@@ -71,23 +75,14 @@ h2 {
   font-weight: 750;
 }
 
-.icon-button,
 .text-button,
 .save-button,
-.danger-button,
-.drag-handle {
+.small-action {
   min-height: 36px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fff;
   color: var(--ink);
-}
-
-.icon-button {
-  width: 36px;
-  padding: 0;
-  font-size: 1.35rem;
-  line-height: 1;
 }
 
 .text-button {
@@ -124,6 +119,7 @@ h2 {
 }
 
 .choice-action:focus-visible,
+.edit-add-row input:focus,
 .entry input:focus,
 .entry select:focus,
 button:focus-visible {
@@ -136,10 +132,6 @@ button:focus-visible {
   background: var(--accent-soft);
   color: var(--accent-strong);
   font-weight: 800;
-}
-
-.choice.dragging {
-  opacity: 0.45;
 }
 
 .choice-main {
@@ -160,40 +152,86 @@ button:focus-visible {
   color: inherit;
   display: grid;
   place-items: center;
-  padding: 6px 28px 6px 4px;
+  padding: 6px 4px;
 }
 
-.choice-count {
-  font-weight: 800;
-}
-
-.choice-tools {
+.choice-badge {
   position: absolute;
-  top: 2px;
-  right: 2px;
-  display: flex;
-  gap: 2px;
-}
-
-.danger-button,
-.drag-handle {
-  width: 22px;
-  height: 22px;
-  min-height: 22px;
-  padding: 0;
-  border-radius: 6px;
-  font-size: 0.8rem;
+  top: 4px;
+  right: 4px;
+  min-width: 22px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 850;
   line-height: 1;
-  background: rgba(255, 255, 255, 0.92);
+  padding: 0 5px;
+  pointer-events: none;
 }
 
-.danger-button {
+.edit-sheet {
+  margin-top: 10px;
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.edit-add-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.edit-add-row input {
+  min-width: 0;
+  min-height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfb;
+  color: var(--ink);
+  padding: 0 10px;
+}
+
+.edit-list {
+  display: grid;
+  gap: 6px;
+}
+
+.edit-row {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  gap: 6px;
+  align-items: center;
+}
+
+.edit-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 750;
+}
+
+.small-action {
+  padding: 0 9px;
+  color: var(--accent-strong);
+  font-size: 0.84rem;
+  font-weight: 750;
+}
+
+.small-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.remove-action {
   color: var(--danger);
-}
-
-.drag-handle {
-  color: var(--muted);
-  cursor: grab;
 }
 
 .summary-row {

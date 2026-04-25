@@ -1,30 +1,47 @@
 {
+  "id": "./",
   "name": "Tracker",
   "short_name": "Tracker",
   "description": "Offline number and category tracker",
-  "start_url": ".",
-  "scope": ".",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait",
   "background_color": "#f6f7f4",
   "theme_color": "#176b87",
+  "categories": ["productivity", "finance"],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "icons/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
