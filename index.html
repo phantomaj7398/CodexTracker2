@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#176b87">
+    <meta name="description" content="Offline number and category tracker">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="stylesheet" href="styles.css">
+    <title>Tracker</title>
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="panel number-panel" aria-labelledby="numbers-title">
+        <div class="panel-head">
+          <h1 id="numbers-title">Numbers</h1>
+          <button class="icon-button" id="add-number" type="button" aria-label="Add number" title="Add number">+</button>
+        </div>
+        <div class="grid numbers-grid" id="numbers-grid" aria-label="Number choices"></div>
+      </section>
+
+      <section class="panel category-panel" aria-labelledby="categories-title">
+        <div class="panel-head">
+          <h2 id="categories-title">Categories</h2>
+          <button class="icon-button" id="add-category" type="button" aria-label="Add category" title="Add category">+</button>
+        </div>
+        <div class="grid categories-grid" id="categories-grid" aria-label="Category choices"></div>
+      </section>
+
+      <section class="summary-row panel" aria-label="Current summary">
+        <div class="summary-value" id="summary-total">0</div>
+        <div class="summary-value summary-category" id="summary-category">-</div>
+        <button class="save-button" id="save-entry" type="button">Save</button>
+      </section>
+
+      <section class="panel entries-panel" aria-labelledby="entries-title">
+        <div class="panel-head">
+          <h2 id="entries-title">Saved</h2>
+          <button class="text-button" id="clear-counts" type="button">Reset</button>
+        </div>
+        <div class="entries-list" id="entries-list" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>
